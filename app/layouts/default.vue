@@ -19,6 +19,14 @@
           <NuxtLink to="/" class="hover:text-white transition"
             >All Tools</NuxtLink
           >
+          <a
+            href="https://github.com/devtool007/devtool"
+            target="_blank"
+            class="hover:text-white transition flex items-center gap-2"
+          >
+            <i class="ph-fill ph-github-logo text-xl"></i>
+            GitHub
+          </a>
         </div>
       </div>
     </nav>
@@ -33,8 +41,11 @@
           DevTool.com - The Essential Developer Toolbox
         </p>
         <div class="flex justify-center gap-6 text-sm text-slate-400 mb-8">
-          <a href="#" class="hover:text-primary">Privacy Policy</a>
-          <a href="#" class="hover:text-primary">Terms of Service</a>
+          <a
+            href="https://github.com/devtool007/devtool"
+            class="hover:text-primary"
+            >Terms of Service</a
+          >
         </div>
         <p class="text-slate-600 text-sm">
           © {{ new Date().getFullYear() }} DevTool.com. All rights reserved.
