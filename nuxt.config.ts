@@ -1,7 +1,19 @@
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss'],
-
+  // 使用 nitro.routeRules 配置
+  nitro: {
+    routeRules: {
+      // '/json' 路由访问时，执行永久重定向 (301)
+      '/json': { redirect: '/tools/json-formatter' },
+      '/base64': { redirect: '/tools/base64-converter' },
+      '/unicode': { redirect: '/tools/unicode-converter' },
+      '/password': { redirect: '/tools/password-generator' },
+      '/timestamp': { redirect: '/tools/timestamp-converter' },
+      // 另一个临时重定向 (302) 示例
+      // '/old-route': { redirect: { to: '/new-route', statusCode: 302 } },
+    }
+  },
   css: [
     // 1. Phosphor Icons (保持你刚才配置的)
     '@phosphor-icons/web/regular',
