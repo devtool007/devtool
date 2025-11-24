@@ -11,8 +11,8 @@
     >
       <main class="flex-1">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 editor-height">
-          <div class="flex flex-col h-full relative">
-            <div class="flex justify-between items-center mb-2 px-1">
+          <div class="flex flex-col h-full relative gap-2">
+            <div class="flex justify-between items-center px-1">
               <label
                 class="text-xs font-bold text-slate-500 uppercase tracking-wider"
                 >Input Text</label
@@ -24,27 +24,32 @@
                 Paste
               </button>
             </div>
+
             <textarea
               id="input"
               v-model="input"
-              @input="handleInput"
               class="flex-1 w-full bg-editor border border-slate-700 rounded-lg p-4 font-mono text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-accent/50 resize-none placeholder-slate-600"
               placeholder="Paste URL or text here..."
             ></textarea>
 
-            <div
-              id="modeIndicator"
-              :class="[
-                'absolute top-10 right-4 text-xs px-2 py-1 rounded bg-slate-800 text-slate-400 pointer-events-none transition duration-500',
-                { 'opacity-100': isConverting, 'opacity-0': !isConverting },
-              ]"
-            >
-              {{ mode === "encode" ? "Encoding..." : "Decoding..." }}
+            <div class="flex gap-3 pt-2">
+              <button
+                @click="process('encode')"
+                class="flex-1 bg-accent hover:bg-cyan-600 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2"
+              >
+                <i class="ph-bold ph-arrow-right"></i> Encode
+              </button>
+              <button
+                @click="process('decode')"
+                class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2"
+              >
+                <i class="ph-bold ph-arrow-left"></i> Decode
+              </button>
             </div>
           </div>
 
-          <div class="flex flex-col h-full">
-            <div class="flex justify-between items-center mb-2 px-1">
+          <div class="flex flex-col h-full gap-2">
+            <div class="flex justify-between items-center px-1">
               <label
                 class="text-xs font-bold text-slate-500 uppercase tracking-wider"
                 >Result</label
@@ -66,7 +71,7 @@
                 v-model="output"
                 readonly
                 class="w-full h-full bg-transparent p-4 font-mono text-sm text-cyan-400 focus:outline-none resize-none placeholder-slate-700"
-                placeholder="Encoded/Decoded result..."
+                placeholder="Result will appear here..."
               ></textarea>
 
               <div
@@ -119,18 +124,6 @@
           >
         </div>
 
-        <div
-          class="bg-card border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center text-center min-h-[250px]"
-        >
-          <span class="text-xs font-bold text-slate-600 uppercase mb-2"
-            >Advertisement</span
-          >
-          <div class="text-slate-500 text-sm">
-            <i class="ph-duotone ph-cloud text-4xl mb-2"></i><br />
-            Secure Cloud Hosting
-          </div>
-        </div>
-
         <SidebarAd />
       </aside>
     </template>
@@ -139,20 +132,15 @@
 
 <script setup>
 import { ref } from "vue";
-// Assume SidebarAd, NuxtLink, ToolLayout are available
 
 // --- Reactive State ---
 const input = ref("");
 const output = ref("");
-const mode = ref("encode"); // 'encode' or 'decode'
-const liveMode = ref(false);
 const showError = ref(false);
-const isConverting = ref(false);
 
 // --- Core Logic ---
 
-function process(action) {
-  if (action) mode.value = action;
+function process(mode) {
   showError.value = false;
 
   const raw = input.value;
@@ -163,27 +151,21 @@ function process(action) {
 
   try {
     let result = "";
-    if (mode.value === "encode") {
-      // Encode logic: uses encodeURIComponent, plus manual replacement for standard form submission compatibility
+    if (mode === "encode") {
+      // Encode logic
       result = encodeURIComponent(raw)
         .replace(/'/g, "%27")
         .replace(/"/g, "%22");
     } else {
-      // Decode logic: replace + with space (standard URL parameter fix) then decode
+      // Decode logic
       result = decodeURIComponent(raw.replace(/\+/g, " "));
     }
 
     output.value = result;
-
-    if (liveMode.value) {
-      isConverting.value = true;
-      setTimeout(() => (isConverting.value = false), 500);
-    }
   } catch (e) {
-    if (mode.value === "decode") {
-      // Only decoding can throw Malformed URI error
+    if (mode === "decode") {
       showError.value = true;
-      output.value = ""; // Clear potentially bad output
+      output.value = "";
     } else {
       output.value = "Error: " + e.message;
     }
@@ -191,12 +173,6 @@ function process(action) {
 }
 
 // --- UI Actions ---
-
-const handleInput = () => {
-  if (liveMode.value) {
-    process();
-  }
-};
 
 const clearAll = () => {
   input.value = "";
@@ -207,9 +183,10 @@ const clearAll = () => {
 const pasteInput = async () => {
   try {
     input.value = await navigator.clipboard.readText();
-    process();
+    // Optional: Auto-process on paste if desired, defaulting to encode
+    // process('encode');
   } catch (e) {
-    // Handle clipboard read error silently
+    console.error("Clipboard paste failed", e);
   }
 };
 
@@ -218,7 +195,6 @@ const copyOutput = () => {
   if (!text) return;
 
   navigator.clipboard.writeText(text).then(() => {
-    // Simple visual feedback (using specific ID from HTML)
     const btn = document.getElementById("copyBtn");
     if (btn) {
       const originalHTML = btn.innerHTML;
@@ -230,7 +206,6 @@ const copyOutput = () => {
 </script>
 
 <style scoped>
-/* Scoped styles adapted from the HTML file */
 .text-primary {
   color: #3b82f6;
 }
